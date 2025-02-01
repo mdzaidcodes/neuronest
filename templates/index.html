@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        #chat-area {
+             flex-grow: 1; /* Allow chat area to take up vertical space */
+        }
+        .message-container{
+             display: flex;
+            margin-bottom: 8px;
+          max-width: 70%;
+        }
+        .user-message {
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .bot-message {
+            text-align: left;
+            display: flex;
+            justify-content: flex-start;
+             position: relative; /* Needed to position speech button */
+        }
+        .user-message .message-text {
+           background-color: #007bff;
+            /* Blue for user */
+           color: white;
+            /* White text for contrast */
+            padding: 8px 12px;
+           border-radius: 20px;
+             /* Rounded corners */
+           white-space: pre-wrap;
+            word-wrap: break-word;
+            display: inline-block;
+        }
+
+        .bot-message .message-text {
+            background-color: #f0f0f0;
+            /* Light gray for AI */
+            padding: 8px 12px;
+            border-radius: 20px;
+            /* Rounded corners */
+             word-wrap: break-word;
+            white-space: pre-wrap;
+           display: inline-block;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+         #vanta-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: -1;
+        }
+        .chat-container {
+            width: 70%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+           display: flex;
+            flex-direction: column;
+             height: 700px; /* Fixed height for chat container */
+           
+        }
+        .typing-indicator {
+            display: flex;
+            padding: 4px 6px;
+            align-items: center;
+        }
+         .typing-message .message-text {
+            background-color: white;
+            position: relative;
+            padding: 8px 12px;
+            border-radius: 20px;
+       }
+        .typing-dot {
+           width: 6px;
+            height: 6px;
+            margin-left: 2px;
+            background-color: #666;
+             border-radius: 50%;
+            animation: typing 1.2s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+             animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0% {
+               opacity: 0.3;
+                transform: translateY(0);
+            }
+          50% {
+               opacity: 1;
+                transform: translateY(-3px);
+            }
+            100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+        }
+         /* Text slide-in animation for AI responses */
+       .ai-message .message-text {
+          overflow: hidden;
+       }
+       .ai-message .message-text span {
+           display: inline-block;
+           white-space: pre-wrap;
+           opacity: 0;
+           animation: slideIn 0.1s forwards;
+        }
+         /* Text slide-in animation keyframes */
+         @keyframes slideIn {
+            from {
+               opacity: 0;
+               transform: translateX(-10px);
+           }
+           to {
+               opacity: 1;
+              transform: translateX(0);
+            }
+       }
+
+       .speech-button {
+            position: absolute;
+             bottom: 5px;
+            right: 5px;
+            background-color: transparent;
+             border: none;
+            cursor: pointer;
+             font-size: 1.2em;
+       }
+         .speech-button:hover {
+             color: #4caf50;
+         }
+
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <div id="vanta-container" class="absolute top-0 left-0 w-full h-full z-[-1]"></div>
+      <div class="container mx-auto p-4 flex-1">
+         <div class="chat-container">
+             <h1 class="text-4xl font-bold text-center text-gray-800 mb-6">NeuroNest</h1>
+            <div id="chat-area" class="bg-white rounded shadow p-4 mb-4 overflow-y-auto">
+             </div>
+             <div class="flex gap-2">
+                <input type="text" id="user-input" class="flex-1 p-2 border rounded focus:outline-none focus:ring focus:border-blue-300" placeholder="Type your message...">
+                <button id="send-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:ring-blue-300">Send</button>
+             </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script>
+         VANTA.NET({
+            el: "#vanta-container",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x76DDF1,
+            backgroundColor: 0x29465B,
+            points: 13.00,
+            maxDistance: 19.00,
+        });
+    </script>
+     <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const sendButton = document.getElementById('send-button');
+          const userInput = document.getElementById('user-input');
+          const chatArea = document.getElementById('chat-area');
+          let currentTypingIndicator = null;
+           let speechSynthesis = window.speechSynthesis;
+
+         sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(event) {
+           if (event.key === 'Enter') {
+               sendMessage();
+            }
+        });
+         function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('bot-message');
+             typingDiv.classList.add('typing-indicator');
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('div');
+                   dot.classList.add('typing-dot');
+                    typingDiv.appendChild(dot);
+               }
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+               return typingDiv;
+          }
+
+          function hideTypingIndicator(typingIndicator) {
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+          }
+           function sendMessage() {
+              const message = userInput.value.trim();
+                if (message) {
+                   displayMessage(message, 'user');
+                   userInput.value = '';
+
+                   currentTypingIndicator = showTypingIndicator();
+                    fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                       body: JSON.stringify({message: message})
+                    })
+                   .then(response => response.json())
+                    .then(data => {
+                       if (data.error){
+                         Swal.fire({
+                           title: 'Error',
+                           text: 'There was a problem processing your request.',
+                           icon: 'error',
+                            confirmButtonText: 'Ok',
+                           });
+
+                         console.error('Error:', data.error);
+
+                         }else{
+                            hideTypingIndicator(currentTypingIndicator);
+                           appendAiMessage(data.response);
+                         }
+
+                    })
+                   .catch(error => {
+                      console.error('Error during fetch:', error);
+                       Swal.fire({
+                           title: 'Error',
+                            text: 'There was a problem communicating with the server.',
+                           icon: 'error',
+                            confirmButtonText: 'Ok'
+                       });
+                         hideTypingIndicator(currentTypingIndicator);
+                   });
+                }
+            }
+           function displayMessage(message, sender) {
+               const messageDiv = document.createElement('div');
+                const messageText = document.createElement('div');
+               messageText.classList.add('message-text');
+                messageText.textContent = message;
+               messageDiv.appendChild(messageText);
+               messageDiv.classList.add(sender + '-message');
+                chatArea.appendChild(messageDiv);
+                chatArea.scrollTop = chatArea.scrollHeight;
+           }
+            function appendAiMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message-container');
+                messageDiv.classList.add('ai-message');
+                const messageText = document.createElement('div');
+               messageText.classList.add('message-text');
+
+                 const characters = message.split('');
+                let animatedMessage = characters.map((char, index) => `<span style="animation-delay: ${index * 0.02}s">${char}</span>`).join('');
+                 messageText.innerHTML = animatedMessage;
+
+                 const speechButton = document.createElement('button');
+                 speechButton.classList.add('speech-button');
+                 speechButton.innerHTML = '🔊'; // Speaker icon
+
+                 speechButton.addEventListener('click', function(){
+                     if(speechSynthesis) {
+                        let utterance = new SpeechSynthesisUtterance(message);
+                         speechSynthesis.speak(utterance);
+                    }
+                  })
+
+
+                messageDiv.appendChild(messageText);
+               messageDiv.appendChild(speechButton);
+
+              chatArea.appendChild(messageDiv);
+                chatArea.scrollTop = chatArea.scrollHeight;
+
+           }
+
+       });
+    </script>
+</body>
+</html>
