@@ -1,59 +1,90 @@
-Welcome to NeuroNest, a tool designed to make learning easier for students with special needs. This guide will walk you through setting up the tool on your computer. For the best experience, we recommend using Google Chrome or Safari browsers.
-Prerequisites
+# NeuroNest: AI-Powered Learning for Everyone
 
-Before you begin, ensure you have the following installed:
+**Welcome to NeuroNest!** This project uses AI to make learning easier, especially for students with special needs. This README will guide you through setting up and running the NeuroNest project.
 
-    Python (3.8 or later)
-    Visual Studio Code (or any other code editor)
+**Project Repository:** [https://github.com/mdzaidcodes/neuronest](https://github.com/mdzaidcodes/neuronest)
 
-Step 1: Install Python
+## What You'll Need:
 
-Download and install Python from Python's official website. Follow the instructions based on your operating system.
-Step 2: Install Visual Studio Code
+Before we start, here's a list of things you'll need to have:
 
-Download and install Visual Studio Code from here. This is the editor where you will write and run your code.
-Setup Instructions
-Step 1: Clone the GitHub Repository
+1.  **A Computer:** You'll need a computer (Windows, macOS, or Linux) to run this project.
+2.  **Internet Connection:** You'll need an internet connection to download necessary software and the AI model.
+3.  **Basic Computer Skills:** You should be comfortable with using a computer, opening files, and typing.
 
-    Open Visual Studio Code.
-    Open the terminal in Visual Studio Code (View > Terminal).
-    Type the following command and press Enter:
+## Step-by-Step Setup Guide:
 
-    git clone https://github.com/mdzaidcodes/neuronest.git
+### 1. Install Essential Software:
 
-Step 2: Install Required Libraries
+   *   **Visual Studio Code (VS Code):**
+      *   This is where you'll view and edit the code.
+      *   Go to: [https://code.visualstudio.com/](https://code.visualstudio.com/) and download the correct version for your computer.
+      *   Follow the instructions to install VS Code.
+   *   **Python:**
+      *   NeuroNest uses Python, a popular programming language.
+      *   Go to: [https://www.python.org/downloads/](https://www.python.org/downloads/) and download the latest version of Python 3.
+      *   Follow the instructions to install Python. During installation, make sure to check the box that says "Add Python to PATH".
+   *  **Ollama:**
+      * Ollama is what runs our AI model.
+      *  Go to: [https://ollama.com/](https://ollama.com/) and download the correct version for your computer.
+      * Follow the instructions to install Ollama.
 
-    In the Visual Studio Code terminal, navigate to the project directory:
+### 2. Clone the Project (Get the Code):
 
-cd neuronest
+   *   **Open VS Code:** Start Visual Studio Code.
+   *   **Open Terminal:** Click on "Terminal" -> "New Terminal" at the top of VS Code.
+   *   **Type this command and press Enter:**
+      ```bash
+      git clone https://github.com/mdzaidcodes/neuronest.git
+      ```
+      This will copy the NeuroNest project to your computer into a folder called "neuronest".
+   *   **Navigate to the project folder:**
+      ```bash
+      cd neuronest
+      ```
 
-Install all required Python libraries by running:
+### 3. Install Python Libraries (Requirements):
 
-    pip install -r requirements.txt
+   *   **In the terminal inside VS Code (while you are inside the neuronest folder), type this and press Enter:**
+      ```bash
+      pip install -r requirements.txt
+      ```
+      This command installs all the necessary Python libraries required for the project.
 
-Step 3: Download and Set Up the AI Model
+### 4. Download the Llama 3.2 AI Model:
 
-    Download the Ollama Lamma 3.2 model from the provided link (add your specific download link here).
-    Place the downloaded model in a directory inside your project (e.g., /models).
+   *   **Open Terminal (if it's not already open) and type this command then press Enter:**
+      ```bash
+      ollama run llama3
+      ```
+     Ollama will download the llama 3.2 model to your computer. This might take some time, depending on your internet speed.
+     When prompted, you can type something like "Hi" just to test it out. After that, you can close ollama and keep running it from your terminal and just keep it open in background
 
-Step 4: Run the Flask Application
+### 5. Running the NeuroNest Application
 
-    In the terminal, ensure you are in the project directory.
-    Start the Flask server by running:
+   *   **Make sure Ollama is running in the background**
+   * **In the terminal inside VS Code, type this and press Enter:**
 
-    python app.py
+      ```bash
+      python app.py
+      ```
+    This starts the NeuroNest server.
+   *  You will see in your terminal output some thing that indicates that the server started running on something called a host and port. It will most likely look like "Running on http://127.0.0.1:5000".
+    * Open either **Google Chrome or Safari**
+    * Type this address into the address bar of your web browser: `http://127.0.0.1:5000`
+   *  That will open the NeuroNest application page.
+   *   You can start using the application now.
+   *   **Keep the Terminal window with python app.py running**. If you close it, the application will stop working.
 
-    Make sure your file is named app.py; if not, replace app.py with your Flask application's filename.
+### Done!
 
-Step 5: Access the Application in Your Browser
+You've successfully set up and run NeuroNest! If you encounter any problems, please check the troubleshooting section.
 
-    Open Google Chrome or Safari.
-    In the address bar, type localhost:5000 and press Enter.
+## Troubleshooting
 
-You should now see the NeuroNest running locally on your browser!
-Troubleshooting
+*   **`pip` command not found:** If you get a message that `pip` is not found, make sure you selected the option "Add Python to PATH" when installing Python. You can uninstall and re-install Python, and make sure this option is selected. Also make sure that Python is installed correctly
+*   **Ollama not working:** If Ollama does not start or has any problem running, make sure Ollama is installed correctly.
+*   **Application not running:** Make sure that you keep the terminal with python app.py running in the background. If you close it, the application will stop working
 
-If you encounter any issues, make sure all commands were typed correctly and that you are in the correct directory. Check your internet connection if downloads are failing.
-Conclusion
+*   If you are having problem after following all the instructions you can contact the project owner mdzaidcodes in github.
 
-Congratulations! You have successfully set up and run your NeuroNest tool. If you have any questions or need further assistance, please feel free to ask for help.
